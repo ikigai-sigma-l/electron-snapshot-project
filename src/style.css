@@ -121,10 +121,12 @@ h1 {
 }
 
 .image-slot__img {
-  /* No sizing here on purpose — shown at the source image's native
-     dimensions, centered by .image-slot's flex centering, and cropped by
-     its `overflow: hidden` if it's larger than the slot. */
+  /* No width/height here on purpose — laid out (and flex-centered) at the
+     source image's native dimensions, then visually shrunk to 50% around
+     its own center via transform, so it stays centered rather than
+     shifting toward one corner as a scaled-down width/height would. */
   flex-shrink: 0;
+  transform: scale(0.5);
   display: none;
 }
 

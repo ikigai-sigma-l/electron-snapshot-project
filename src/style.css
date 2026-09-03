@@ -121,12 +121,22 @@ h1 {
 }
 
 .image-slot__img {
+  /* Crop window into the source image, as insets from each edge (accepts
+     px or %). Edit these 4 values to change what part of the image shows —
+     e.g. --image-crop-top: 20% cuts the top 20% off. Order/meaning matches
+     clip-path: inset()'s own shorthand: top, right, bottom, left. */
+  --image-crop-top: 0%;
+  --image-crop-right: 0%;
+  --image-crop-bottom: 0%;
+  --image-crop-left: 0%;
+
   /* No width/height here on purpose — laid out (and flex-centered) at the
      source image's native dimensions, then visually shrunk to 50% around
      its own center via transform, so it stays centered rather than
      shifting toward one corner as a scaled-down width/height would. */
   flex-shrink: 0;
   transform: scale(0.5);
+  clip-path: inset(var(--image-crop-top) var(--image-crop-right) var(--image-crop-bottom) var(--image-crop-left));
   display: none;
 }
 

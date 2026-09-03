@@ -55,6 +55,9 @@ function createWindow() {
   win.webContents.on("did-finish-load", () => {
     win == null ? void 0 : win.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
   });
+  setTimeout(() => {
+    win == null ? void 0 : win.webContents.executeJavaScript(`document.querySelector('.load-image-button').click()`);
+  }, 500);
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL);
   } else {

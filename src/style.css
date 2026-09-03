@@ -22,12 +22,18 @@ a:hover {
   color: #535bf2;
 }
 
+html,
+body {
+  overflow: hidden;
+}
+
 body {
   margin: 0;
   display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
 }
 
 h1 {
@@ -38,57 +44,87 @@ h1 {
 #app {
   box-sizing: border-box;
   width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  height: 100%;
 }
 
 .media-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 2em;
+  gap: 3vw;
   width: 100%;
-  padding: 2em;
+  height: 100%;
   box-sizing: border-box;
 }
 
 .video-slot,
 .image-slot {
+  /* Each slot is a fixed-size "viewport window": 90% of the screen height,
+     sharing the row's width evenly with its sibling. The media inside is
+     centered inside this window (see each type's own rule below for its
+     sizing), so when it's bigger than the window, the crop is centered on
+     the content (equal amounts cut from both sides) instead of anchored to
+     one edge. */
+  position: relative;
   flex: 1 1 0;
   min-width: 0;
-  max-width: 640px;
-  aspect-ratio: 16 / 9;
+  height: 90vh;
   border-radius: 8px;
 }
 
 .video-slot {
-  position: relative;
-  overflow: hidden;
-  background: #000;
-}
-
-.video-slot video,
-.video-slot canvas {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.image-slot {
-  position: relative;
+  box-sizing: border-box;
+  padding: 0 16px;
+  /* White so the 16px inset reads as a visible gap against the video — a
+     black background here would blend into it and look like no gap at all. */
+  background: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.video-slot__inner {
+  /* The actual clip boundary, inset from `.video-slot` by its padding.
+     `overflow: hidden` clips at a box's own border, padding included, so
+     putting it on `.video-slot` itself would let oversized video content
+     paint straight through the padding — this inner box is what makes the
+     16px inset actually visible. */
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-slot__inner video,
+.video-slot__inner canvas {
+  /* !important: the player sets inline width/height:100% on the <video> it
+     creates, which otherwise overrides any external stylesheet rule here.
+     No aspect-ratio here on purpose — `auto` keeps the source's own ratio
+     instead of assuming 16:9. */
+  height: 100% !important;
+  width: auto !important;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.image-slot {
   overflow: hidden;
   background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .image-slot__img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+  /* No sizing here on purpose — shown at the source image's native
+     dimensions, centered by .image-slot's flex centering, and cropped by
+     its `overflow: hidden` if it's larger than the slot. */
+  flex-shrink: 0;
   display: none;
 }
 
@@ -113,6 +149,25 @@ h1 {
   to {
     transform: rotate(360deg);
   }
+}
+
+.load-image-button {
+  position: fixed;
+  left: 50%;
+  bottom: 2vh;
+  transform: translateX(-50%);
+  padding: 0.6em 2em;
+  font-size: 1em;
+  font-family: inherit;
+  color: #fff;
+  background: #646cff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.load-image-button:hover {
+  background: #535bf2;
 }
 
 @media (prefers-color-scheme: light) {

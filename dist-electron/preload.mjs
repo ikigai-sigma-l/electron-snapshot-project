@@ -21,5 +21,5 @@ electron.contextBridge.exposeInMainWorld("ipcRenderer", {
   // ...
 });
 electron.contextBridge.exposeInMainWorld("imageAPI", {
-  poll: () => electron.ipcRenderer.invoke("image:poll")
+  load: () => electron.ipcRenderer.invoke("image:load")
 });

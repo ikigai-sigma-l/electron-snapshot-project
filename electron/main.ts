@@ -22,21 +22,20 @@ function expandHome(p: string): string {
   return p.startsWith('~') ? path.join(os.homedir(), p.slice(1)) : p
 }
 
-ipcMain.handle('image:poll', async () => {
+ipcMain.handle('image:load', async () => {
   const imagePath = expandHome(config.imagePath)
   try {
-    const stat = await fs.stat(imagePath)
+    await fs.stat(imagePath)
     const buffer = await fs.readFile(imagePath)
     const ext = path.extname(imagePath).slice(1).toLowerCase()
     const mime = IMAGE_MIME_TYPES[ext] ?? 'application/octet-stream'
 
     return {
       exists: true as const,
-      mtimeMs: stat.mtimeMs,
       dataUrl: `data:${mime};base64,${buffer.toString('base64')}`,
     }
   } catch (err) {
-    console.error('[image:poll] failed to read', imagePath, err)
+    console.error('[image:load] failed to read', imagePath, err)
     return { exists: false as const }
   }
 })

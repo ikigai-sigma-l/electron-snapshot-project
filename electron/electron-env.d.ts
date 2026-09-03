@@ -25,6 +25,6 @@ declare namespace NodeJS {
 interface Window {
   ipcRenderer: import('electron').IpcRenderer
   imageAPI: {
-    poll: () => Promise<import('./preload').ImagePollResult>
+    load: () => Promise<import('./preload').ImageLoadResult>
   }
 }

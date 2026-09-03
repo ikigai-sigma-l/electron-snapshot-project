@@ -4,6 +4,8 @@ import { createImageElement } from './image'
 
 const container = document.createElement('div')
 container.className = 'media-container'
-container.append(createVideoElement(), createImageElement())
 
-document.querySelector<HTMLDivElement>('#app')!.append(container)
+const { element: imageElement, button: imageButton } = createImageElement()
+container.append(createVideoElement(), imageElement)
+
+document.querySelector<HTMLDivElement>('#app')!.append(container, imageButton)

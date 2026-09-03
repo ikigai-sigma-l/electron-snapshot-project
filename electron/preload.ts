@@ -23,12 +23,11 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   // ...
 })
 
-export interface ImagePollResult {
+export interface ImageLoadResult {
   exists: boolean
-  mtimeMs?: number
   dataUrl?: string
 }
 
 contextBridge.exposeInMainWorld('imageAPI', {
-  poll: (): Promise<ImagePollResult> => ipcRenderer.invoke('image:poll'),
+  load: (): Promise<ImageLoadResult> => ipcRenderer.invoke('image:load'),
 })

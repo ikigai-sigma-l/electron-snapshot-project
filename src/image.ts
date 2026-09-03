@@ -1,6 +1,4 @@
-import { config } from '../shared/config'
-
-export function createImageElement(): HTMLElement {
+export function createImageElement(): { element: HTMLElement; button: HTMLButtonElement } {
   const wrapper = document.createElement('div')
   wrapper.className = 'image-slot'
 
@@ -15,26 +13,35 @@ export function createImageElement(): HTMLElement {
 
   wrapper.append(img, spinner)
 
-  let lastMtimeMs: number | null = null
+  const button = document.createElement('button')
+  button.className = 'load-image-button'
+  button.textContent = 'snapshot'
 
-  const poll = async () => {
-    const result = await window.imageAPI.poll()
-
-    if (!result.exists) {
-      lastMtimeMs = null
-      wrapper.classList.remove('is-loaded')
-      return
-    }
-
-    if (result.mtimeMs === lastMtimeMs) return
-
-    lastMtimeMs = result.mtimeMs!
-    img.src = result.dataUrl!
-    wrapper.classList.add('is-loaded')
+  const setLoaded = (loaded: boolean) => {
+    wrapper.classList.toggle('is-loaded', loaded)
+    button.textContent = loaded ? 'clear' : 'snapshot'
   }
 
-  poll()
-  setInterval(poll, config.imageCheckIntervalMs)
+  const load = async () => {
+    const result = await window.imageAPI.load()
+    if (!result.exists) return
 
-  return wrapper
+    img.src = result.dataUrl!
+    setLoaded(true)
+  }
+
+  const clear = () => {
+    img.src = ''
+    setLoaded(false)
+  }
+
+  button.addEventListener('click', () => {
+    if (wrapper.classList.contains('is-loaded')) {
+      clear()
+    } else {
+      load()
+    }
+  })
+
+  return { element: wrapper, button }
 }

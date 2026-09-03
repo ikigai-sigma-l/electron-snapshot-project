@@ -2,20 +2,10 @@ import { ipcMain, app, BrowserWindow } from "electron";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import fs from "node:fs/promises";
+import os from "node:os";
 const config = {
   /** Absolute path to the snapshot image file to display. Edit to match your environment. */
-  imagePath: "/Users/sigma.l/snapshot.png",
-  /** How often (ms) to check imagePath for existence/updates. */
-  imageCheckIntervalMs: 2e3,
-  /** FLV/RTC stream URL the Crystal Player loads into the video container. */
-  videoStreamUrl: "http://192.168.20.22:8889/idp/view/whep",
-  /**
-   * Max tolerated latency (sec) before the player's watchdog ends playback.
-   * Default is 2s; this pull endpoint's frame timecode routinely lags the
-   * local clock by just over that, which was tripping the watchdog and
-   * ending playback right after the first frame rendered.
-   */
-  videoMaxLatencySec: 10
+  imagePath: "/Users/sigma.l/snapshot.png"
 };
 const __dirname$1 = path.dirname(fileURLToPath(import.meta.url));
 const IMAGE_MIME_TYPES = {
@@ -27,18 +17,22 @@ const IMAGE_MIME_TYPES = {
   bmp: "image/bmp",
   svg: "image/svg+xml"
 };
-ipcMain.handle("image:poll", async () => {
+function expandHome(p) {
+  return p.startsWith("~") ? path.join(os.homedir(), p.slice(1)) : p;
+}
+ipcMain.handle("image:load", async () => {
+  const imagePath = expandHome(config.imagePath);
   try {
-    const stat = await fs.stat(config.imagePath);
-    const buffer = await fs.readFile(config.imagePath);
-    const ext = path.extname(config.imagePath).slice(1).toLowerCase();
+    await fs.stat(imagePath);
+    const buffer = await fs.readFile(imagePath);
+    const ext = path.extname(imagePath).slice(1).toLowerCase();
     const mime = IMAGE_MIME_TYPES[ext] ?? "application/octet-stream";
     return {
       exists: true,
-      mtimeMs: stat.mtimeMs,
       dataUrl: `data:${mime};base64,${buffer.toString("base64")}`
     };
-  } catch {
+  } catch (err) {
+    console.error("[image:load] failed to read", imagePath, err);
     return { exists: false };
   }
 });

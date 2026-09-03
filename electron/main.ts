@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs/promises'
+import os from 'node:os'
 import { config } from '../shared/config'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -16,11 +17,17 @@ const IMAGE_MIME_TYPES: Record<string, string> = {
   svg: 'image/svg+xml',
 }
 
+// Node's fs doesn't expand a leading `~` the way a shell would.
+function expandHome(p: string): string {
+  return p.startsWith('~') ? path.join(os.homedir(), p.slice(1)) : p
+}
+
 ipcMain.handle('image:poll', async () => {
+  const imagePath = expandHome(config.imagePath)
   try {
-    const stat = await fs.stat(config.imagePath)
-    const buffer = await fs.readFile(config.imagePath)
-    const ext = path.extname(config.imagePath).slice(1).toLowerCase()
+    const stat = await fs.stat(imagePath)
+    const buffer = await fs.readFile(imagePath)
+    const ext = path.extname(imagePath).slice(1).toLowerCase()
     const mime = IMAGE_MIME_TYPES[ext] ?? 'application/octet-stream'
 
     return {
@@ -28,7 +35,8 @@ ipcMain.handle('image:poll', async () => {
       mtimeMs: stat.mtimeMs,
       dataUrl: `data:${mime};base64,${buffer.toString('base64')}`,
     }
-  } catch {
+  } catch (err) {
+    console.error('[image:poll] failed to read', imagePath, err)
     return { exists: false as const }
   }
 })
